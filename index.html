@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      color: white;
+      font-family: "Courier New", monospace;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      overflow: hidden;
+    }
+    .video-circle {
+      margin-top: 20px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 25px rgba(255,255,255,0.9);
+      pointer-events: none;
+    }
+    .video-circle video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .typewriter-box {
+      margin-top: 20px;
+      width: 380px;
+      height: 80px;
+      background: #fff;  
+      color: #000;        
+      font-size: 22px;
+      font-weight: bold;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      text-indent: 20px;
+    }
+    .instagram {
+      margin-top: 20px;
+      background: #833AB4;
+      padding: 10px 25px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(131,58,180,0.8);
+    }
+    .instagram a {
+      text-decoration: none;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .instagram img {
+      width: 22px;
+      height: 22px;
+    }
+    .message-box {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .message-box input {
+      width: 280px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+      background: #000;
+      color: white;
+      box-shadow: 0 0 10px rgba(255,255,255,0.6);
+      text-align: center;
+    }
+    .message-box button {
+      background: red;
+      color: white;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 0 12px rgba(255,0,0,0.7);
+    }
+    .clock-box {
+      margin-top: 20px;
+      background: #111;
+      padding: 10px 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="video-circle">
+    <video id="video" loop>
+      <source src="https://tikcdn.io/ssstik/6966651863517121793" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="typewriter-box" id="typewriter"></div>
+
+  <div class="instagram">
+    <a href="https://www.instagram.com/seninprofilin" target="_blank">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png" alt="IG">
+      Instagram
+    </a>
+  </div>
+
+  <div class="message-box">
+    <input type="text" id="userMessage" placeholder="">
+    <button onclick="sendMessage()">Schicken Sie mir eine Nachricht - (Bana Mesaj Gönder)</button>
+  </div>
+
+  <div class="clock-box" id="clock">Almanya/Frankfurt<br>00:00:00</div>
+
+  <script>
+    const BOT_TOKEN = "8089934158:AAE6S3MfeVWpIfqmMIN9mZAz7ZcwqxFlfg4";
+    const CHAT_ID = "7705380171";
+
+    const texts = [
+      " PYTHON",
+      " HTML",
+      " JAVASCRIPT",
+      " CSS",
+      " CYBER SECURITY",
+      " Hallo, ich bin Pascal. Ich lebe in Deutschland.",
+      " Merhaba, ben Pascal. Almanya'da yaşıyorum."
+    ];
+    let index = 0, charIndex = 0, deleting = false;
+    const tw = document.getElementById("typewriter");
+
+    function typeWriter() {
+      const current = texts[index];
+      if (!deleting) {
+        tw.textContent = "$" + current.substring(0, charIndex + 1);
+        charIndex++;
+        if (charIndex === current.length) {
+          deleting = true;
+          setTimeout(typeWriter, 1000);
+          return;
+        }
+      } else {
+        tw.textContent = "$" + current.substring(0, charIndex - 1);
+        charIndex--;
+        if (charIndex === 0) {
+          deleting = false;
+          index = (index + 1) % texts.length;
+        }
+      }
+      setTimeout(typeWriter, deleting ? 40 : 70);
+    }
+    typeWriter();
+
+    async function sendMessage() {
+      const msg = document.getElementById("userMessage").value;
+      if (!msg) return;
+      let ip = "Bilinmiyor";
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        ip = data.ip;
+      } catch (e) {}
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: "💬 Yeni mesaj: " + msg + "\n🌍 IP: " + ip
+        })
+      }).then(() => {
+        document.getElementById("userMessage").value = "";
+        alert("✅");
+      });
+    }
+
+    
+    window.onload = async () => {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: "🌍 PUHH AL İP: " + data.ip
+          })
+        });
+      } catch(e){}
+    };
+
+    function updateClock() {
+      const now = new Date();
+      const options = { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit", second: "2-digit" };
+      const time = new Intl.DateTimeFormat("de-DE", options).format(now);
+      document.getElementById("clock").innerHTML = "Almanya/Frankfurt<br>" + time;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    document.body.addEventListener("click", () => {
+      document.getElementById("video").play();
+    }, { once: true });
+  </script>
+</body>
+</html>
